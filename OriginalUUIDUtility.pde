@@ -5,20 +5,31 @@ void setup() {
   println(uuid.toString());
   uuid.SetRandomUUID();
   println(uuid.toString());
-  uuid.SetFromText("9aafaf91-7ed9-4b25-bd01-be39f6afb935");
+  uuid.SetFromText("d6951d0c-d9e4-41ae-9691-f1dc244f9a63");
   println(uuid.toString());
 }
 
 public final class UUIDUtility {
   //--------------------------------------------------
+  //  定数定義部
+  //--------------------------------------------------
+
+  //型変換が正しくできないのでアスキー神殿一覧から変換。見ての通りTabを含んだ文字列は通常とは違う値になる。非バイナリデータ推奨
+  final private String ascii = "\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]~_'abcdefghijklmnopqrstuvwxyz{|}~\t";
+
+  /**
+   * MD5の計算に使用するデータ
+   * 正規化のためfinalを付けていない
+   */
+  private int[] T;
+
+
+  //--------------------------------------------------
   //  メンバ変数定義部
   //--------------------------------------------------
-  
+
   /** 実データ*/
   private int[] values;
-  
-  /** MD5の計算に使用するデータ*/
-  private int[] T;
 
 
   //--------------------------------------------------
@@ -83,21 +94,21 @@ public final class UUIDUtility {
     return values[0]+values[1]+values[2]+values[3];
   }
 
-  
+
   /** 文字列表現に変換*/
   public String toString() {
     if (IsProper()) {
       return hex(values[0]).toLowerCase()+"-"+
-      hex(values[1]).substring(0, 4).toLowerCase()+"-"+
-      hex(values[1]).substring(4, 8).toLowerCase()+"-"+
-      hex(values[2]).substring(0, 4).toLowerCase()+"-"+
-      hex(values[2]).substring(4, 8).toLowerCase()+hex(values[3]).toLowerCase();
+        hex(values[1]).substring(0, 4).toLowerCase()+"-"+
+        hex(values[1]).substring(4, 8).toLowerCase()+"-"+
+        hex(values[2]).substring(0, 4).toLowerCase()+"-"+
+        hex(values[2]).substring(4, 8).toLowerCase()+hex(values[3]).toLowerCase();
     } else {
       return "null";
     }
   }
 
-  
+
   /** データが正しく作成されているかを確認*/
   public boolean IsProper() {
     return values!=null;
@@ -129,17 +140,18 @@ public final class UUIDUtility {
   /** 文字列表現から設定*/
   private void SetFromText(String textUUID) {
     values=null;
-    if (textUUID!=null&&textUUID.length()==36) {
+    if(textUUID==null)return;
+    if (textUUID.length()==36) {
       boolean isProper=true;
       for (int i=0; i<36; i++) {
-        char c=textUUID.charAt(i);
+        int code=GetCode(textUUID.charAt(i));
         if (i==8||i==13||i==18||i==23) {
-          if (c!='-') {
+          if (code!=45) {
             isProper=false;
             break;
           }
         } else {
-          if ((c<'0'||'9'<c)&&(c<'a'||'f'<c)&&(c<'A'||'F'<c)) {
+          if ((code<48&&57<code)&&(code<65&&70<code)&&(code<97&&102<code)) {
             isProper=false;
             break;
           }
@@ -161,14 +173,7 @@ public final class UUIDUtility {
   private void SetFromString(String str) {
     int[] bytes=new int[str.length()];
     for (int i=0, end=str.length(); i<end; i++) {
-      for (int j=0; j<128; j++) {
-        //型変換が正しくできないのでアスキー神殿一覧から変換。見ての通りTabを含んだ文字列は通常とは違う値になる。非バイナリデータ推奨
-        String ascii = "\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]~_'abcdefghijklmnopqrstuvwxyz{|}~\t";
-        if (ascii.charAt(j)==str.charAt(i)) {
-          bytes[i]=j;
-          break;
-        }
-      }
+      bytes[i]=GetCode(str.charAt(i));
     }
     SetFromBytesByInts(bytes);
   }
@@ -272,7 +277,18 @@ public final class UUIDUtility {
     }
   }
 
-  
+
+  /** 文字コードの取得*/
+  private int GetCode(char c) {
+    for (int i=0; i<128; i++) {
+      if (ascii.charAt(i)==c) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+
   /** MD5アルゴリズムの計算に使用*/
   private int MD5F(int x, int y, int z) {
     return ((x) & (y)) | ((~x) & (z));
@@ -294,7 +310,7 @@ public final class UUIDUtility {
     int ret=(((x) << (n)) | ((x) >> (32-(n))));
     return ret&0xffffffff;
   }
-  
+
   /** JavaScriptとデータの扱いが違うので互換性を持つように変換*/
   private int ConvertInt(int value) {
     return value&0xffffffff;
