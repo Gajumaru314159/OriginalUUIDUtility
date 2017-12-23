@@ -14,7 +14,7 @@ public final class UUIDUtility {
   //  定数定義部
   //--------------------------------------------------
 
-  //型変換が正しくできないのでアスキー神殿一覧から変換。見ての通りTabを含んだ文字列は通常とは違う値になる。非バイナリデータ推奨
+  //型変換が正しくできないのでアスキー一覧から変換。見ての通りTabを含んだ文字列は通常とは違う値になる。非バイナリデータ推奨
   final private String ascii = "\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]~_'abcdefghijklmnopqrstuvwxyz{|}~\t";
 
   /**
